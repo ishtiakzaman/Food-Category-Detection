@@ -40,6 +40,7 @@ typedef map<string, vector<string> > Dataset;
 
 #include <Classifier.h>
 #include <NearestNeighbor.h>
+#include <SVMBaseLine.h>
 
 // Figure out a list of files in a given directory.
 //
@@ -80,6 +81,8 @@ int main(int argc, char **argv)
 		Classifier *classifier=0;
 		if(algo == "nn")
 			classifier = new NearestNeighbor(class_list);
+		else if(algo == "svmbl")
+			classifier = new SVMBaseLine(class_list);
 		else
 			throw std::string("unknown classifier " + algo);
 
