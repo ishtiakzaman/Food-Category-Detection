@@ -5,16 +5,22 @@ class SVMBaseLine : public Classifier
 {
 	protected:
 		static const int size=40;  // subsampled image resolution
-		const char *tmp_data_file="svm.dat";
-		const char *tmp_model_file="svm.model";
-		const char *tmp_output_file="svm.out";
-		const char *class_num_map_file="classnum.txt";
+		char tmp_data_file[20];
+		char tmp_model_file[20];
+		char tmp_output_file[20];
+		char class_num_map_file[20];
 
 		map<string, CImg<double> > models; // trained models
 		map<int, string> class_num_map; // assign a num to each class
 
 	public:
-		SVMBaseLine(const vector<string> &_class_list) : Classifier(_class_list) {}
+		SVMBaseLine(const vector<string> &_class_list) : Classifier(_class_list) 
+		{
+			strcpy(tmp_data_file, "svm.dat");
+			strcpy(tmp_model_file, "svm.model");
+			strcpy(tmp_output_file, "svm.out");
+			strcpy(class_num_map_file, "classnum.txt");
+		}
 
 		// Nearest neighbor training. All this does is read in all the images, resize
 		// them to a common size, convert to greyscale, and dump them as vectors to a file
