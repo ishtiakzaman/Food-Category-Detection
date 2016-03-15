@@ -20,13 +20,17 @@
 #include "CImg.h"
 #include <ctime>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <iomanip>
 #include <stdlib.h>
+#include <utility>
 #include <string>
 #include <vector>
 #include <Sift.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <list>
 #include <map>
 #include <numeric>
 
