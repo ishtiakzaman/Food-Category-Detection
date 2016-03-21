@@ -112,19 +112,11 @@ private:
 	void normalize_features(vector<int> &feature_values)
 	{
 		double min, max;
-		/*
-		min = max = feature_values[0];
-		for (int i = 0; i < feature_values.size(); ++i)
-		{
-			if (feature_values[i] < min)
-				min = feature_values[i];
-			else if (feature_values[i] > max)
-				max = feature_values[i];
-		}*/
+		double range = 100.0;
 		min = -1 * size * size * 255;
 		max = -min;
 		for (int i = 0; i < feature_values.size(); ++i)
-			feature_values[i] = 200.0*(((feature_values[i] - min)*1.0) / (max - min))-100.0;
+			feature_values[i] = 2.0*range*(((feature_values[i] - min)*1.0) / (max - min))-range;
 	}
 
 	void write_features_to_file()
@@ -149,6 +141,11 @@ private:
 	{
 		ifstream ifs;
 		ifs.open(feature_file_name.c_str());
+		if (ifs.is_open() == false)
+		{
+			cout << "Failed to read file: " << feature_file_name << endl;
+			exit(0);;
+		}
 		ifs >> n_features;		
 
 		for (int i = 0; i < n_features; ++i)
@@ -204,7 +201,7 @@ private:
 		{
 			for (int x = 0; x < img.width(); ++x)
 			{
-				printf("%ld ", int(img(x, y, 0, 0)));
+				printf("%d ", int(img(x, y, 0, 0)));
 			}
 			cout << endl;
 		}
@@ -243,11 +240,18 @@ public:
 		svm_prediction_file_name = "haar_svm_predict.dat";
 		feature_file_name = "haar_features.dat";
 		size = 60;
-		n_features = 1000; 
+		n_features = 1000;
 	}
 	
 	virtual void train(const Dataset &filenames) 
 	{		
+		cout << "SVM model files are present in the repository, thus you can directly test without training." << endl;
+		cout << "Do you still want to train (might take around 5 minutes)? (y/n): ";
+		string response;
+		cin >> response;
+		if (response[0] != 'y' && response[0] != 'Y')
+			return;
+
 		cout << "Creating " << n_features << " Haar like features" << endl;
 		compute_features();		
 
@@ -270,16 +274,21 @@ public:
 			{
 				CImg<int> img(c_iter->second[i].c_str());
 				img.resize(size, size, 1, 3);
-				CImg<int> gray_image = img.get_RGBtoYCbCr().get_channel(0);
-				
+
 				vector<int> feature_values;
 
-				// integral of image						
-				integral_image(gray_image);	
-				
-				// Loop through all the features
-				for(list< pair< list<region>, list<region> > >::iterator it = features.begin(); it != features.end(); ++it)
-					feature_values.push_back(get_feature_value_on_image(gray_image, *it));				
+				// For 3 color channels
+				for (int p = 0; p < 3; ++p)
+				{					
+					CImg<int> single_color_image = img.get_channel(p);					
+					
+					// integral of image						
+					integral_image(single_color_image);	
+					
+					// Loop through all the features
+					for(list< pair< list<region>, list<region> > >::iterator it = features.begin(); it != features.end(); ++it)
+						feature_values.push_back(get_feature_value_on_image(single_color_image, *it));
+				}
 
 				normalize_features(feature_values);
 
@@ -299,8 +308,7 @@ public:
 		ofs1.close();
 		ofs2.close();
 
-		// Train SVM
-		//string cmd = "./svm_multiclass_learn -c 0.000001 ";
+		// Train SVM		
 		string cmd = "./svm_multiclass_learn -c 50 ";
 		cmd += svm_train_file_name;
 		cmd += " ";
@@ -313,22 +321,27 @@ public:
 	{
 		CImg<int> img(filename.c_str());
 		img.resize(size, size, 1, 3);
-		CImg<int> gray_image = img.get_RGBtoYCbCr().get_channel(0);
 
-		// integral of image						
-		integral_image(gray_image);			
+		vector<int> feature_values;
+
+		// For 3 color channels
+		for (int p = 0; p < 3; ++p)
+		{			
+			CImg<int> single_color_image = img.get_channel(p);			
+
+			// integral of image						
+			integral_image(single_color_image);			
+
+			// Loop through all the features
+			for(list< pair< list<region>, list<region> > >::iterator it = features.begin(); it != features.end(); ++it)
+				feature_values.push_back(get_feature_value_on_image(single_color_image, *it));
+		}
+
+		normalize_features(feature_values);
 
 		ofstream ofs;
 		ofs.open(svm_test_file_name.c_str());
 		ofs << "2";
-		
-		vector<int> feature_values;
-
-		// Loop through all the features
-		for(list< pair< list<region>, list<region> > >::iterator it = features.begin(); it != features.end(); ++it)
-			feature_values.push_back(get_feature_value_on_image(gray_image, *it));
-
-		normalize_features(feature_values);
 
 		int feature_index = 1;
 		// Loop through all the features
@@ -340,7 +353,7 @@ public:
 		ofs << endl;
 		ofs.close();
 
-		string cmd = "./svm_multiclass_classify ";
+		string cmd = "./svm_multiclass_classify -v 0 ";
 		cmd += svm_test_file_name;
 		cmd += " ";
 		cmd += svm_model_file_name;
@@ -361,7 +374,21 @@ public:
 	{
 		string class_name;
 		int class_num;
+		
+		ifstream ifs_model(svm_model_file_name.c_str());
+		if (ifs_model.is_open() == false)
+		{
+			cout << "Failed to read file: " << svm_model_file_name << endl;
+			exit(0);
+		}
+		ifs_model.close();
+
 		ifstream ifs_cnm(class_map_file_name.c_str());
+		if (ifs_cnm.is_open() == false)
+		{
+			cout << "Failed to read file: " << class_map_file_name << endl;
+			exit(0);
+		}
 		while (ifs_cnm.good())
 		{
 			ifs_cnm >> class_name >> class_num;
