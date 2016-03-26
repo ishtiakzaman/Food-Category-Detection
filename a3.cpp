@@ -48,6 +48,7 @@ typedef map<string, vector<string> > Dataset;
 #include <SVMBaseLine.h>
 #include <Haar.h>
 #include <Deep.h>
+#include <EigenFoods.h>
 
 // Figure out a list of files in a given directory.
 //
@@ -92,6 +93,8 @@ int main(int argc, char **argv)
 			classifier = new SVMBaseLine(class_list);
 		else if(algo == "haar")
 			classifier = new Haar(class_list);
+		else if(algo == "eigen")
+			classifier = new EigenFoods(class_list);
 		else if(algo == "deep")
 			classifier = new Deep(class_list);
 		else
