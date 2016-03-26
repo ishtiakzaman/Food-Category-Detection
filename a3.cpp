@@ -33,6 +33,7 @@
 #include <list>
 #include <map>
 #include <numeric>
+#include <ctime>
 
 //Use the cimg namespace to access the functions easily
 using namespace cimg_library;
@@ -46,6 +47,7 @@ typedef map<string, vector<string> > Dataset;
 #include <NearestNeighbor.h>
 #include <SVMBaseLine.h>
 #include <Haar.h>
+#include <Deep.h>
 
 // Figure out a list of files in a given directory.
 //
@@ -90,6 +92,8 @@ int main(int argc, char **argv)
 			classifier = new SVMBaseLine(class_list);
 		else if(algo == "haar")
 			classifier = new Haar(class_list);
+		else if(algo == "deep")
+			classifier = new Deep(class_list);
 		else
 			throw std::string("unknown classifier " + algo);
 

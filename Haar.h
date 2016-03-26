@@ -245,7 +245,7 @@ public:
 	
 	virtual void train(const Dataset &filenames) 
 	{		
-		cout << "SVM model files are present in the repository, thus you can directly test without training." << endl;
+		cout << "SVM model files are present in the repository, you can directly test without training." << endl;
 		cout << "Do you still want to train (might take around 5 minutes)? (y/n): ";
 		string response;
 		cin >> response;
