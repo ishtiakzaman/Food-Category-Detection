@@ -31,7 +31,7 @@ class BagofWords : public Classifier
 			Classifier(_class_list), centers(128, num_centers)
 		{
 			tmp_data_file = "svm.dat";
-			tmp_model_file = "svm.model";
+			tmp_model_file = "bow_svm.model";
 			tmp_output_file = "svm.out";
 			class_num_map_file = "classnum.txt";
 			class_centers_file = "kmeans_centers.png";
@@ -309,10 +309,10 @@ class BagofWords : public Classifier
 			{
 				histo(j, 0) = histo(j, 0) / predicts.size() * 255;
 			}
-			for (int j = 0; j < histo.width(); j++)
-			{
-				cout << j << ":" << histo[j] << endl;
-			}
+			//for (int j = 0; j < histo.width(); j++)
+			//{
+			//	cout << j << ":" << histo[j] << endl;
+			//}
 			return histo;
 		}
 		CImg<double> extract_features(const vector<FeatureDataEntry> &dataset, const CImg<double> &centers)
@@ -349,10 +349,10 @@ class BagofWords : public Classifier
 				{
 					histo(j, i) = histo(j, i) / predicts.size() * 255;
 				}
-				for (int j = 0; j < histo.width(); j++)
-				{
-					cout << j << ":" << histo(j,i) << endl;
-				}
+				//for (int j = 0; j < histo.width(); j++)
+				//{
+				//	cout << j << ":" << histo(j,i) << endl;
+				//}
 			}
 			return histo;
 		}
