@@ -61,7 +61,9 @@ class BagofWords : public Classifier
 			int num_features = 0;
 			CImg<double> all_features(128, 0, 1, 1);
 
+			system("./mk_cache_dir.sh");
 
+			//Do Sift
 			for(Dataset::const_iterator c_iter=filenames.begin(); c_iter != filenames.end(); ++c_iter)
 			{
 				cout << "Processing " << c_iter->first << "(" << num << ")" << endl;
@@ -72,7 +74,6 @@ class BagofWords : public Classifier
 
 				CImg<double> class_vectors(size*size*3, filenames.size(), 1);
 
-				//
 				for(int i=0; i<c_iter->second.size(); i++)
 				{
 					cout << i << endl;
@@ -120,15 +121,9 @@ class BagofWords : public Classifier
 					fs_sift.close();
 
 					num_features += entry.descriptors.size();
-
-					//if (i >= 4)
-					//	break;
 				}
-				//cout << endl;
 
 				num ++;
-				//if (num >= 4)
-				//	break;
 			}
 
 
@@ -159,21 +154,6 @@ class BagofWords : public Classifier
 			all_features.save("all_sift.cimg");
 
 			KMEANS:
-			// export all feature data
-			//ofstream ofs_data("data.csv");
-			//for (int i = 0; i < all_features.height(); i++)
-			//{
-			//	for (int j = 0; j < all_features.width(); j++)
-			//	{
-			//		ofs_data << all_features(j,i) << ",";
-			//	}
-			//	ofs_data << endl;
-			//}
-
-			// K-means
-			//int num_centers = 5;
-			//CImg<double> centers(128, num_centers, 1, 1);
-
 			if ( access( class_centers_file, R_OK ) != -1 )
 			{
 				centers = CImg<double>(class_centers_file);
@@ -181,21 +161,22 @@ class BagofWords : public Classifier
 				goto EXTRACT_FEATURE;
 			}
 
-			//mine
-			//kmeans(all_features, num_centers, centers);
-			{
-			//to opencv mat
-			Mat datamat(all_features.height(), all_features.width(), CV_32F);
-		   	img2mat(datamat, all_features);
-			Mat predicts;
-			Mat mat_centers;
-			TermCriteria crit;
-			crit.epsilon = 0.01;
-			//crit.
-			//kmeans(datamat, num_centers, predicts, crit, 3, KMEANS_PP_CENTERS, mat_centers);
-			kmeans(datamat, num_centers, predicts, crit, 3, KMEANS_RANDOM_CENTERS, mat_centers);
-			centers = mat2img(mat_centers);
-			centers.save(class_centers_file);
+			
+			//kmeans(all_features, num_centers, centers);//my own kmeans algorithm
+
+			{// For GOTO
+				//to opencv mat
+				Mat datamat(all_features.height(), all_features.width(), CV_32F);
+				img2mat(datamat, all_features);
+				Mat predicts;
+				Mat mat_centers;
+				TermCriteria crit;
+				crit.epsilon = 0.01;
+				//crit.
+				//kmeans(datamat, num_centers, predicts, crit, 3, KMEANS_PP_CENTERS, mat_centers);
+				kmeans(datamat, num_centers, predicts, crit, 3, KMEANS_RANDOM_CENTERS, mat_centers);
+				centers = mat2img(mat_centers);
+				centers.save(class_centers_file);
 			}
 
 			EXTRACT_FEATURE:
