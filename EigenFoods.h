@@ -391,12 +391,8 @@ cout <<"computing mean vector" << endl;
 
 	}
 
+	
 	virtual string classify(const string &filename)
-	{
-		cout << "in classify" << endl;
-	}
-
-	virtual string classify(const string &filename, const string &label)
 	{
 		CImg<double> test_features = get_features(filename);
 
@@ -415,9 +411,9 @@ cout <<"computing mean vector" << endl;
 		ofstream ofs;
 
 		ofs.open(svm_test_file_name.c_str());
-		//ofs << "0";
+		ofs << "2";
 
-		ofs << find(class_list.begin(), class_list.end(), label) - class_list.begin() + 1 << ' ' ;
+		//ofs << find(class_list.begin(), class_list.end(), label) - class_list.begin() + 1 << ' ' ;
 
 		for(int j = 0; j<t.width(); j++)
 		{

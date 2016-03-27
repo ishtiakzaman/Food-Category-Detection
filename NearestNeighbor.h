@@ -20,7 +20,7 @@ public:
       }
   }
 
-   virtual string classify(const string &filename,const string &label)
+   virtual string classify(const string &filename)
   {
     CImg<double> test_image = extract_features(filename);
 	      

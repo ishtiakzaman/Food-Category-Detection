@@ -317,7 +317,7 @@ public:
 		system(cmd.c_str());
 	}
 
-	virtual string classify(const string &filename,const string &label)
+	virtual string classify(const string &filename)
 	{
 		CImg<int> img(filename.c_str());
 		img.resize(size, size, 1, 3);
