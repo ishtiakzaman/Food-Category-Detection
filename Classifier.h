@@ -11,6 +11,8 @@ public:
   // Classify a single image.
   virtual string classify(const string &filename) = 0;
 
+  //virtual string classify(const string &filename, const string &label) = 0;
+
   // Load in a trained model.
   virtual void load_model() = 0;
 
