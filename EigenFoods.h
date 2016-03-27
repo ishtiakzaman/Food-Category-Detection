@@ -30,7 +30,7 @@ private:
 	int size;
 	int k;
 	CImg<double> eigenVec;
-	map<string, string> class_num_map;
+	map<int, string> class_num_map;
 
 	//method to convert to grey image.
 
@@ -69,7 +69,7 @@ private:
 			for(int i = 0; i < c_iter->second.size(); i++)
 			{
 				CImg<double> img(c_iter->second[i].c_str());
-				img.resize(40, 40, 1, 3);
+				img.resize(size, size, 1, 3);
 				CImg<double> gray_image = getGreyScale(img);
 				
 				gray_image.unroll('x').transpose();
@@ -243,15 +243,21 @@ private:
 	}
 
 
-	void write_train_to_file(const CImg<double> &train, const Dataset &filenames)
+	void write_train_to_file(CImg<double> &train, const Dataset &filenames)
 	{
-		ofstream ofs;
+		ofstream ofs,ofs1;
 		ofs.open(svm_train_file_name.c_str());
+		ofs1.open(class_map_file_name.c_str());
+		int class_index = 1;
 		int h = 0;
+		//train.normalize(-100,100);
 
 		for(Dataset::const_iterator c_iter = filenames.begin(); c_iter != filenames.end(); ++c_iter)
 		{
 			
+			ofs1 << c_iter->first << " " << class_index << endl;
+
+			cout << c_iter->first << "::" << class_index << endl;
 
 			for(int i = 0; i < c_iter->second.size(); i++)
 			{
@@ -266,12 +272,12 @@ private:
 				ofs << endl;
 			}
 
-					
+					class_index++;
 		}
 
 		ofs.close();
-
-		string cmd = "./svm_multiclass_learn -c 0.18 ";
+		ofs1.close();
+		string cmd = "./svm_multiclass_learn -c 0.01 ";
 		cmd += svm_train_file_name;
 		cmd += " ";
 		cmd += svm_model_file_name;
@@ -311,7 +317,7 @@ public:
 
 	EigenFoods(const vector<string> &_class_list):Classifier(_class_list)
 	{
-		class_map_file_name = "eigen_class_map.dat";
+		class_map_file_name = "eigen_class_map.txt";
 		svm_train_file_name = "eigen_svm_train.txt";
 		svm_test_file_name = "eigen_svm_test.txt";
 		svm_model_file_name = "eigen_svm_model";
@@ -319,7 +325,7 @@ public:
 		eigen_vec_file_name = "eigen_vec.txt";
 		eigen_val_file_name = "eigen_val.txt";
 		size = 40;
-		k = 1000;
+		k = 1250;
 	}
 
 	virtual void train(const Dataset &filenames)
@@ -338,21 +344,38 @@ public:
 
 		GreyDataset gd;
 
+		cout <<"Converting to grey" << endl;
+
 		convertToGrey(filenames, gd);
+
+		cout <<"getting feature matrix" << endl;
 		feature_matrix = createFeatureMatrix(gd);
+
+cout <<"computing mean vector" << endl;
 		mean_vector = getMeanFeatureVector(feature_matrix);
+
+		cout <<"Getting A matrix " << endl;
 		A = getMatrixA(feature_matrix, mean_vector);
 
+		cout <<"A transpose() " << endl;
 		A_t = A.get_transpose();
+
+		cout <<"Cov A" << endl;
 		cov = A * A_t;
 
+		cout <<"Eigen value:" << endl;
 		cov.symmetric_eigen(eigen_val,eigen_vec);
 
+		cout <<"top k" << endl;
 		top_k_vecs = getTopKVectors(eigen_vec);
 
+		cout <<"writing top k" << endl;
 		write(top_k_vecs, eigen_vec_file_name);
+
+		cout <<"writing eigen val and eigen vec" << endl;
 		write(eigen_val, eigen_val_file_name);
 
+		cout <<"split top k" << endl;
 		CImgList<double> image_list = top_k_vecs.get_split('x',top_k_vecs.width());
 
 		cout << image_list.size() << endl;
@@ -370,22 +393,35 @@ public:
 
 	virtual string classify(const string &filename)
 	{
+		cout << "in classify" << endl;
+	}
+
+	virtual string classify(const string &filename, const string &label)
+	{
 		CImg<double> test_features = get_features(filename);
+
+		cout << eigenVec.width() << ", " << eigenVec.height() << endl;
+
+		cout << test_features.width() << ", " << test_features.height() << endl;
 
 		CImg<double> t = eigenVec * test_features;
 
+
+
 		t.transpose();
 
+		//t.normalize(-100,100);
+		
 		ofstream ofs;
 
 		ofs.open(svm_test_file_name.c_str());
-		ofs << "2";
+		//ofs << "0";
 
-		//ofs << find(class_list.begin(), class_list.end(), c_iter->first) - class_list.begin() + 1 << " " ;
+		ofs << find(class_list.begin(), class_list.end(), label) - class_list.begin() + 1 << ' ' ;
 
 		for(int j = 0; j<t.width(); j++)
 		{
-			ofs << j + 1 << ":" << t(j,0,0,0) << " ";
+			ofs << j + 1 << ":" << t(j,0) << ' ';
 		}
 			
 		ofs << endl;
@@ -400,11 +436,8 @@ public:
 
 		system(cmd.c_str());
 
-		
-
-
 		ifstream ifs(svm_prediction_file_name.c_str());
-		string num;
+		int num;
 
 		ifs >> num;
 
@@ -416,24 +449,20 @@ public:
 
 	virtual void load_model()
 	{
-		Dataset filenames;
-		string str = "test";
-		vector<string> class_list = files_in_dir(str);
-		for(vector<string>::const_iterator c = class_list.begin(); c != class_list.end(); ++c)
-			filenames[*c] = files_in_dir(str + "/" + *c, false);
+		ifstream ifs2(class_map_file_name.c_str());
+		string class_name;
+		int class_num;
 
-
-		for(Dataset::const_iterator c_iter = filenames.begin(); c_iter != filenames.end(); ++c_iter)
+		while(ifs2.good())
 		{
-			
+			ifs2 >> class_name >> class_num;
 
-			for(int i = 0; i < c_iter->second.size(); i++)
-			{
-				string key = c_iter->second[i];
-				string val = c_iter->first;
-				class_num_map.insert(std::pair<string,string>(key,val));
-			}
+			cout << class_name << ":::" << class_num << endl;
+
+			class_num_map[class_num] = class_name;
 		}
+
+		ifs2.close();
 
 		int h, w;
 		ifstream ifs(eigen_vec_file_name.c_str());

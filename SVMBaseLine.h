@@ -61,7 +61,7 @@ class SVMBaseLine : public Classifier
 			system(cmd.c_str());
 		}
 
-		virtual string classify(const string &filename)
+		virtual string classify(const string &filename, const string &label)
 		{
 			CImg<double> test_image = extract_features(filename);
 

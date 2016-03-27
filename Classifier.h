@@ -9,7 +9,9 @@ public:
   virtual void train(const Dataset &filenames) = 0;
 
   // Classify a single image.
-  virtual string classify(const string &filename) = 0;
+  //virtual string classify(const string &filename) = 0;
+
+  virtual string classify(const string &filename, const string &label) = 0;
 
   // Load in a trained model.
   virtual void load_model() = 0;
@@ -26,7 +28,7 @@ public:
       for(vector<string>::const_iterator f_iter = c_iter->second.begin(); f_iter != c_iter->second.end(); ++f_iter)
 	{
 	  cerr << "Classifying " << *f_iter << "..." << endl;
-	  predictions[c_iter->first][*f_iter]=classify(*f_iter);
+	  predictions[c_iter->first][*f_iter]=classify(*f_iter,c_iter->first);
 	}
     
     // now score!
