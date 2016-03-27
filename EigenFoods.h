@@ -411,7 +411,7 @@ cout <<"computing mean vector" << endl;
 		ofstream ofs;
 
 		ofs.open(svm_test_file_name.c_str());
-		ofs << "2";
+		ofs << "2 ";
 
 		//ofs << find(class_list.begin(), class_list.end(), label) - class_list.begin() + 1 << ' ' ;
 
