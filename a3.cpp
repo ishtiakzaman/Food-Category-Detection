@@ -46,6 +46,7 @@ typedef map<string, vector<string> > Dataset;
 #include <NearestNeighbor.h>
 #include <SVMBaseLine.h>
 #include <Haar.h>
+#include <BagofWords.h>
 
 // Figure out a list of files in a given directory.
 //
@@ -90,6 +91,8 @@ int main(int argc, char **argv)
 			classifier = new SVMBaseLine(class_list);
 		else if(algo == "haar")
 			classifier = new Haar(class_list);
+		else if(algo == "bow")
+			classifier = new BagofWords(class_list);
 		else
 			throw std::string("unknown classifier " + algo);
 
