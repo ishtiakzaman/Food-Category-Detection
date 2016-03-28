@@ -18,13 +18,13 @@ public:
 		svm_model_file_name = "deep_svm_model.dat";
 		svm_prediction_file_name = "deep_svm_predict.dat";
 		feature_file_name = "overfeat_features.dat";
-		size = 256;		
+		size = 231;		
 	}
 	
 	virtual void train(const Dataset &filenames) 
 	{	
 		cout << "SVM model files are present in the repository, you can directly test without training." << endl;
-		cout << "Do you still want to train (might take around 25-30 minutes)? (y/n): ";
+		cout << "Do you still want to train (might take around 50 minutes)? (y/n): ";
 		string response;
 		cin >> response;
 		if (response[0] != 'y' && response[0] != 'Y')
@@ -102,7 +102,7 @@ public:
 		system(cmd.c_str());		
 	}
 
-	 virtual string classify(const string &filename)
+	virtual string classify(const string &filename)
 	{
 		CImg<int> img(filename.c_str());
 		img.resize(size, size, 1, 3);
