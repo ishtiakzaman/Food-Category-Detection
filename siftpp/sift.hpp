@@ -205,7 +205,7 @@ public:
   Sift(const pixel_t* _im_pt, int _width, int _height,
        float_t _sigman,
        float_t _sigma0,
-       int _O, int _S,
+       int _O, int s_S,
        int _omin, int _smin, int _smax) ;
   ~Sift() ;
   /*@}*/
