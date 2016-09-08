@@ -1,2 +1,2 @@
-# Food Category Detection using different methods and comparing them.
+# Food Category Detection
 See the **Report.pdf** for details.
